@@ -2,6 +2,7 @@ package com.orm.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -43,6 +44,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			if (fields != null && fields.length > 0) {
 				List<Object> values = new ArrayList<Object>();
 				for (Field field : fields) {
+					//排除static 或 final修饰的属性
+					int modifiers = field.getModifiers();
+					if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+						continue;
+					}
 					// 设置为可以访问该属性的值
 					field.setAccessible(true);
 					// 判断是否为主键
@@ -104,6 +110,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			if (fields != null && fields.length > 0) {
 				List<Object> values = new ArrayList<Object>();
 				for (Field field : fields) {
+					//排除static 或 final修饰的属性
+					int modifiers = field.getModifiers();
+					if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+						continue;
+					}
 					// 设置为可以访问该属性的值
 					field.setAccessible(true);
 					// 判断是否为主键
@@ -186,6 +197,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 				values = new ArrayList<Object>();
 				buffer.append("set ");
 				for (Field field : fields) {// 处理普通的属性---->是否存在的有column这种注解的属性
+					//排除static 或 final修饰的属性
+					int modifiers = field.getModifiers();
+					if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+						continue;
+					}
 					field.setAccessible(true);
 					boolean isColum = field.isAnnotationPresent(Column.class);
 					if (isColum) {// 获取值 拼接sql里面
@@ -262,7 +278,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 				values = new ArrayList<Object>();
 				for (int i = 0; i < fields.length; i++) {// 开始找id 主键
 					Field field = fields[i];
-
+					//排除static 或 final修饰的属性
+					int modifiers = field.getModifiers();
+					if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+						continue;
+					}
 					boolean isID = field.isAnnotationPresent(ID.class);
 					if (isID) {// 具有删除的条件------>如果标示为id的属性不是在第一个
 						field.setAccessible(true);
@@ -284,35 +304,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			} else {
 				throw new Exception(clazz.getName() + "没有添加任何属性");
 			}
-			/*
-			 * //原始的 // 判断属性里面是否存在的有ID注解的属性--->一个都没有--->抛出异常 Field idField =
-			 * null; for (Field field : fields) { if
-			 * (field.isAnnotationPresent(ID.class)) { // 找到了加了ID注解的属性 idField =
-			 * field; break; } } // 类里所有的属性都没加ID注解 if (idField == null) { throw
-			 * new Exception(clazz.getName() + "没有标示ID的列"); }
-			 * 
-			 * //判断是否为初始值------>排除加了ID注解但是没有给id属性进行赋值操作的情况 //1、先获取该属性的数据类型
-			 * Class<?> dataType = idField.getType();
-			 * 
-			 * //设置为可以访问id的属性值 idField.setAccessible(true);
-			 * 
-			 * //定义一个变量出来存储id的值--->主键 不可能为boolean 类型的数据 Object value=null;
-			 * //2、判断是否是基本数据类型 if(dataType.isPrimitive()){ value=idField.get(t);
-			 * //定义及Map集合--->不同的基本数据类型所对应的默认值
-			 * if(value.equals(0)||value.equals(0.0)){ throw new
-			 * Exception(clazz.getName() + "加了ID注解但是没有给id属性进行赋值"); } }else{//引用
-			 * value=idField.get(t); if(value==null){ throw new
-			 * Exception(clazz.getName() + "加了ID注解但是没有给id属性进行赋值"); } }
-			 * 
-			 * //有值 继续拼接sql ID id = idField.getAnnotation(ID.class);
-			 * buffer.append(id.name()).append("=?");
-			 * 
-			 * //判断id是否赋值了-->是否为初始值--->基本 引用 List<Object> values=new
-			 * ArrayList<Object>(); values.add(value);
-			 * 
-			 * // jdbc里面的操作--->将数据保存到数据库 System.out.println("执行的sql语句为：" +
-			 * buffer); return executeUpdate(buffer.toString(), values);
-			 */
 			System.out.println("执行的sql语句为：" + buffer);
 			return executeUpdate(buffer.toString(), values);
 		} catch (Exception e) {
@@ -322,8 +313,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 		}
 	}
 
-	// public final T findEntityById(Class<T> clazz,Serializable id) throws
-	// Exception{//通过参数传递进来
 	/**
 	 * 根据ID查询数据
 	 * 
@@ -352,6 +341,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			// 开始拼接id查询条件
 			for (int i = 0; i < fields.length; i++) {// 属性中有加了ID注解的属性，没加
 				Field field = fields[i];
+				//排除static 或 final修饰的属性
+				int modifiers = field.getModifiers();
+				if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+					continue;
+				}
 				boolean isID = field.isAnnotationPresent(ID.class);
 				if (isID) {// 获取id属性对应在数据库中的字段
 					buffer.append(" where ");
@@ -422,6 +416,11 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			temp = clazz.newInstance();
 			// 转换每行的数据
 			for (Field field : fields) {
+				//排除static 或 final修饰的属性
+				int modifiers = field.getModifiers();
+				if((modifiers&Modifier.FINAL)!=0||(modifiers&Modifier.STATIC)!=0){
+					continue;
+				}
 				String lable = null;// 列名
 				// 获取列名----> id colum
 				boolean isID = field.isAnnotationPresent(ID.class);
