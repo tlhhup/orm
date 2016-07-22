@@ -10,8 +10,9 @@ import java.util.Properties;
 
 public abstract class JdbcWapper {
 
-	private Connection connection;
-	private PreparedStatement statement;
+	//TODO 1、处理连接是否需要然子类获取到? 2、封装一个方法将对象转换成集合
+	protected Connection connection;
+	protected PreparedStatement statement;
 	protected ResultSet resultSet;
 
 	public JdbcWapper() {

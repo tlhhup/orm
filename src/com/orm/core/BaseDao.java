@@ -61,10 +61,13 @@ public abstract class BaseDao<T> extends JdbcWapper {
 							values.add(field.get(t));
 						}
 					} else {// 普通列
-						Column column = field.getAnnotation(Column.class);
-						buffer.append(column.name() + ",");
-						// 存储值
-						values.add(field.get(t));
+						boolean isColumn = field.isAnnotationPresent(Column.class);
+						if(isColumn){
+							Column column = field.getAnnotation(Column.class);
+							buffer.append(column.name() + ",");
+							// 存储值
+							values.add(field.get(t));
+						}
 					}
 				}
 				// 删除多余的","
@@ -128,10 +131,13 @@ public abstract class BaseDao<T> extends JdbcWapper {
 							values.add(field.get(t));
 						}
 					} else {// 普通列
-						Column column = field.getAnnotation(Column.class);
-						buffer.append(column.name() + ",");
-						// 存储值
-						values.add(field.get(t));
+						boolean isColumn = field.isAnnotationPresent(Column.class);
+						if(isColumn){
+							Column column = field.getAnnotation(Column.class);
+							buffer.append(column.name() + ",");
+							// 存储值
+							values.add(field.get(t));
+						}
 					}
 				}
 				// 删除多余的","
@@ -456,6 +462,9 @@ public abstract class BaseDao<T> extends JdbcWapper {
 	private Object convertData(Object value) {
 		if (value instanceof BigDecimal) {
 			return ((BigDecimal) value).floatValue();
+		}
+		if(value instanceof BigInteger){
+			return ((BigInteger) value).intValue();
 		}
 		return value;
 	}
