@@ -70,17 +70,20 @@ public abstract class BaseDao<T> extends JdbcWapper {
 						}
 					}
 				}
-				// 删除多余的","
-				buffer.deleteCharAt(buffer.length() - 1).append(") values(");
-				// 遍历的添加值的集合--->决定？个数
-				for (int i = 0; i < values.size(); i++) {
-					buffer.append("?").append(",");
+				if(values!=null&&values.size()>0){
+					// 删除多余的","
+					buffer.deleteCharAt(buffer.length() - 1).append(") values(");
+					// 遍历的添加值的集合--->决定？个数
+					for (int i = 0; i < values.size(); i++) {
+						buffer.append("?").append(",");
+					}
+					// 删除最后一个逗号
+					buffer.deleteCharAt(buffer.length() - 1).append(")");
+					// jdbc里面的操作--->将数据保存到数据库
+					return executeUpdate(buffer.toString(), values);
+				}else{
+					throw new IllegalArgumentException(clazz.getName()+"没有添加ID或者Colum注解的属性!");
 				}
-				// 删除最后一个逗号
-				buffer.deleteCharAt(buffer.length() - 1).append(")");
-				// jdbc里面的操作--->将数据保存到数据库
-				System.out.println("执行的sql语句为：" + buffer);
-				return executeUpdate(buffer.toString(), values);
 			}
 		} catch (Exception e) {
 			throw e;
@@ -149,14 +152,13 @@ public abstract class BaseDao<T> extends JdbcWapper {
 				// 删除最后一个逗号
 				buffer.deleteCharAt(buffer.length() - 1).append(")");
 				// jdbc里面的操作--->将数据保存到数据库
-				System.out.println("执行的sql语句为：" + buffer);
 				// 讲数据保存到数据库中
 				this.executeUpdate(buffer.toString(), values);
 
 				// 设置自增主键的值
 				ID id = idField.getAnnotation(ID.class);
 				if (id.isAutoIncrement()) {// 如果只自增主键
-					// 查询得到id
+					/*// 查询得到id
 					String sql = "SELECT LAST_INSERT_ID()";
 					resultSet = this.executeQurey(sql, null);
 					while (resultSet.next()) {
@@ -164,6 +166,19 @@ public abstract class BaseDao<T> extends JdbcWapper {
 						if (value instanceof BigInteger) {
 							value = ((BigInteger) value).intValue();
 						}
+						idField.setAccessible(true);
+						idField.set(t, value);
+					}*/
+					resultSet = statement.getGeneratedKeys();
+					if(resultSet!=null){
+						resultSet.next();
+						Object value = resultSet.getObject(1);
+						/*if (value instanceof BigInteger) {
+							value = ((BigInteger) value).intValue();
+						}
+						if(value instanceof Long){
+							value=((Long) value).intValue();
+						}*/
 						idField.setAccessible(true);
 						idField.set(t, value);
 					}
@@ -251,7 +266,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 				}
 
 				// 完成更新操作
-				System.out.println(buffer.toString());
 				return this.executeUpdate(buffer.toString(), values);
 			} else {
 				throw new Exception(clazz.getName() + "没有添加任何属性");
@@ -310,7 +324,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 			} else {
 				throw new Exception(clazz.getName() + "没有添加任何属性");
 			}
-			System.out.println("执行的sql语句为：" + buffer);
 			return executeUpdate(buffer.toString(), values);
 		} catch (Exception e) {
 			throw e;
@@ -362,7 +375,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 				}
 			}
 			try {
-				System.out.println("执行的sql语句为：" + buffer.toString());
 				// 数据封装成List集合
 				List<Object> values = new ArrayList<Object>();
 				values.add(id);
@@ -397,7 +409,6 @@ public abstract class BaseDao<T> extends JdbcWapper {
 		Field[] fields = clazz.getDeclaredFields();
 		if (fields != null && fields.length > 0) {
 			try {
-				System.out.println("执行的sql语句为：" + buffer.toString());
 				// 执行查询得到结果集
 				resultSet = this.executeQurey(buffer.toString(), null);
 				List<T> result = convertValues(clazz, fields);

@@ -44,3 +44,8 @@
 				e.printStackTrace();
 			}
 		}
+4. 添加c3p0数据源和log4j
+5. 更新获取自增主键的方式	
+		
+		statement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+		resultSet = statement.getGeneratedKeys();

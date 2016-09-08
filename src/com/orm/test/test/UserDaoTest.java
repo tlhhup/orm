@@ -43,7 +43,7 @@ public class UserDaoTest {
 		UserDao userDao=new UserDao();
 		try {
 			User t = new User();
-			t.setId(1);
+			t.setId(2);
 			t.setAddress("³É¶¼");
 			t.setTel("110");
 			int saveEntity = userDao.updateEntity(t);

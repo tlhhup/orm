@@ -33,6 +33,7 @@ public class StudentDaoTest {
 			
 			Student student = studentDao.saveEntityReturnID(t);
 			System.out.println(student);
+			studentDao.deleteById(student);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
